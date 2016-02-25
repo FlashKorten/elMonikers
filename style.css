@@ -1,0 +1,167 @@
+/*
+   red = #e35885
+   green = #8ec16d
+   blue = #61a1bc
+ */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #eaeaea;
+  color: #4f4f4f;
+  font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.4em;
+}
+
+#container {
+  width: 500px;
+  margin: 50px auto;
+  padding: 0px 50px;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+h1 {
+  font-size: 30px;
+  margin: 0 0 25px 0;
+  color: #61a1bc;
+}
+
+h2 {
+  font-size: 25px;
+  margin: 30px 0 0 0;
+  color: #797B74;
+}
+
+header {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+button.solved {
+  border: 0;
+  height: 55px;
+  vertical-align: top;
+  width: 50%;
+  padding: 5px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #33cc33;
+}
+
+button.later {
+  border: 0;
+  height: 55px;
+  vertical-align: top;
+  width: 50%;
+  padding: 5px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #ff6666;
+}
+
+button.next {
+  border: 0;
+  height: 55px;
+  vertical-align: top;
+  width: 100%;
+  padding: 5px 15px;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #66ccff;
+}
+
+button.start {
+  border: 0;
+  height: 55px;
+  vertical-align: top;
+  width: 100%;
+  padding: 5px 15px;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #66ccff;
+}
+
+button:hover {
+  opacity: 0.75;
+}
+
+button {
+  outline: none;
+  font-size: 100%;
+}
+
+h2.name {
+  color: #61a1bc;
+}
+
+div.classification {
+  color: #669999;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+form {
+  margin: 0 0 20px 0;
+  padding: 0;
+}
+
+ul {
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: left;
+}
+
+li {
+  background: #61a1bc;
+  background: #fff;
+  height: 25px;
+  position: relative;
+  padding: 15px 30px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+li:hover {
+  background: #fcfcfc;
+  /* background: #61a1bc; */
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+li.highlight {
+  background: #61a1bc;
+}
+
+hr {
+  margin: 20px 0 10px 0;
+  border: 0;
+  border-top: 1px dashed #c5c5c5;
+}
