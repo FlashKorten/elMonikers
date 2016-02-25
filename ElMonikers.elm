@@ -1,10 +1,10 @@
-module Monika where
+module ElMonikers where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Signal exposing (Address)
-import List exposing (map,reverse,length)
+import List exposing (map,reverse,length,sortBy)
 
 import StartApp.Simple as StartApp
 
@@ -80,7 +80,6 @@ view address model =
   div
     [ id "container" ]
     [ pageHeader,
-      statsView model.players,
       stateView address model
     ]
 
@@ -99,27 +98,54 @@ inPlayButtons address =
       [ text "Next Player" ]
     ]
 
-playView : Address Action -> Zip Card -> Html
-playView address (a, b, c) = case c of
-      []     -> div [] [text "Empty!!!"]
-      (x::_) -> div [] [text x.title, p [][text (toString a)], p [][text (toString b)], p [][text (toString c)], buttons address]
-
-stateView : Address Action -> Model -> Html
-stateView address model = case model.state of
-  Play -> playView address model.cards
-  Start -> div [] [text "Start"]
-  Switch -> div [ id "switch"] [button [onClick address Unpause][text "Start"]]
-  End -> div [] [text "End"]
-
-pageHeader : Html
-pageHeader =
-  h1 [ ] [ text "Monika!" ]
-
 statsView : List Player -> Html
 statsView players = case players of
   (p::_) -> div [ class "player" ] [ div [ class "name"] [text p.name]
                          , div [ class "score"] [text (toString p.score)]]
   []     -> div [ class "error"] [text "Get some players"]
+
+playViewBottom : Address Action -> Html
+playViewBottom address = div [] [inPlayButtons address]
+
+playViewCard : Address Action -> Zip Card -> Html
+playViewCard address (a, b, c) = case c of
+      []     -> div [] [text "Empty!!!"]
+      (x::_) -> div [] [text x.title
+                       -- , p [] [text (toString a)]
+                       -- , p [] [text (toString b)]
+                       -- , p [] [text (toString c)]
+                       ]
+
+playView : Address Action -> Model -> Html
+playView address model = div [] [ statsView model.players
+                                , playViewCard address model.cards
+                                , playViewBottom address]
+
+scoreListEntry : Player -> Html
+scoreListEntry p = li [] [text (p.name ++ ": " ++ toString p.score)]
+
+endView : Address Action -> Model -> Html
+endView address model = div [ id "end"] [
+                              ul [] (map scoreListEntry <| reverse <| sortBy .score model.players),
+                              button [onClick address Init][text "Start Game"]]
+
+switchView : Address Action -> Model -> Html
+switchView address model = div [ id "switch"]
+                               [ statsView model.players
+                               , button [onClick address Unpause]
+                                        [text "Go on..."]
+                               ]
+
+stateView : Address Action -> Model -> Html
+stateView address model = case model.state of
+  Play -> playView address model
+  Start -> div [] [text "Start"]
+  Switch -> switchView address model
+  End -> endView address model
+
+pageHeader : Html
+pageHeader =
+  h1 [ ] [ text "elMonikers!" ]
 
 
 -- UPDATE
@@ -134,14 +160,15 @@ type Action = NoOp
             | Later
             | Next
             | Unpause
+            | Init
 
 update : Action -> Model -> Model
 update action model = case action of
+  Init   -> initialModel
   NoOp   -> model
   Later  -> {model | cards = nextElem model.cards}
   Next   -> {model | players = cycle model.players
-                   , state = Switch
-            }
+                   , state = Switch}
   Unpause -> {model | state = Play}
   Solved -> case model.cards of
     (1,_,_) -> {model | players = incScore model.players
