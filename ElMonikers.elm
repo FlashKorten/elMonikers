@@ -3,10 +3,9 @@ module ElMonikers where
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Signal exposing (Address)
+import Signal exposing (Mailbox, Address, Signal, mailbox, merge, foldp)
 import List exposing (map,reverse,length,sortBy,head)
-
-import StartApp.Simple as StartApp
+import Time exposing (every, second)
 
 -- MODEL
 
@@ -98,6 +97,8 @@ type alias Model =
   { players : List Player
   , cards : Zip Card
   , state : State
+  , maxCount : Int
+  , count : Int
   }
 
 dummyPlayers : List Player
@@ -107,6 +108,8 @@ initialModel : Model
 initialModel = { players = dummyPlayers
                , cards = dummyCards
                , state = Start
+               , maxCount = 10
+               , count = 10
                }
 
 -- VIEW
@@ -129,17 +132,16 @@ inPlayButtons address =
       [ text "Solved" ],
       button
       [ class "later", onClick address Later ]
-      [ text "Later..." ]],
-      div [] [
-      button
-      [ onClick address Next ]
-      [ text "Next Player" ]]
+      [ text "Later..." ]]
     ]
 
 statsView : List Player -> Html
 statsView players = case players of
   (p::_) -> div [ class "player" ] [ h2 [ class "name"] [text (p.name ++ " - " ++ toString p.score)]]
   []     -> div [ class "error"] [text "Get some players"]
+
+playViewTop : Model -> Html
+playViewTop model = div [] [h1 [if model.count < 4 then class "counterAlert" else class "counter"] [text (toString model.count)], statsView model.players]
 
 playViewBottom : Address Action -> Html
 playViewBottom address = div [] [inPlayButtons address]
@@ -156,7 +158,7 @@ playViewCard address (a, b, c) = case c of
                        ]
 
 playView : Address Action -> Model -> Html
-playView address model = div [] [ statsView model.players
+playView address model = div [] [ playViewTop model
                                 , playViewCard address model.cards
                                 , playViewBottom address]
 
@@ -204,30 +206,45 @@ incScore players = case players of
 type Action = NoOp
             | Solved
             | Later
-            | Next
             | Unpause
             | Init
+            | Tick
+
+ticks : Signal Action
+ticks = Signal.map (\_ -> Tick) (every second)
+
+actionsMB : Mailbox Action
+actionsMB = mailbox NoOp
+
+clicks : Signal Action
+clicks = actionsMB.signal
+
+actions : Signal Action
+actions = merge clicks ticks
+
+model : Signal Model
+model = foldp update initialModel actions
 
 update : Action -> Model -> Model
 update action model = case action of
   NoOp   -> model
   Init   -> {initialModel | state = Play}
   Later  -> {model | cards = nextElem model.cards}
-  Next   -> {model | players = cycle model.players
-                   , cards = nextElem model.cards
-                   , state = Switch}
   Unpause -> {model | state = Play}
+  Tick    -> case model.state of
+    Play -> case model.count of
+              0 -> {model | players = cycle model.players
+                          , cards = nextElem model.cards
+                          , state = Switch
+                          , count = model.maxCount}
+              n -> {model | count = n - 1}
+    _    -> model
   Solved -> case model.cards of
     (1,_,_) -> {model | players = incScore model.players
                       , state = End}
     _       -> {model | cards = removeElem model.cards
                    , players = incScore model.players }
 
-main: Signal Html
-main =
-  StartApp.start
-    { model = initialModel,
-      view  = view,
-     update = update
-    }
+main : Signal Html
+main = Signal.map (view actionsMB.address) model
 

@@ -33,6 +33,18 @@ h1 {
   color: #61a1bc;
 }
 
+h1.counter {
+  font-size: 40px;
+  text-align: center;
+  color: #61a1bc;
+}
+
+h1.counterAlert {
+  font-size: 50px;
+  text-align: center;
+  color: #cc0000;
+}
+
 h2 {
   font-size: 25px;
   margin: 30px 0 0 0;
