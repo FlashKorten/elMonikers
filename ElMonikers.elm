@@ -1,8 +1,8 @@
 module ElMonikers where
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Html exposing (Html,text,h1,h2,div,button,ul,li,hr)
+import Html.Attributes exposing (class, id)
+import Html.Events exposing (onClick)
 import Signal exposing (Mailbox, Address, Signal, mailbox, merge, foldp)
 import List exposing (map,reverse,length,sortBy,head)
 import Time exposing (every, second)
