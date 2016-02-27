@@ -1,10 +1,10 @@
 module ElMonikers (..) where
 
-import Html exposing (Html, text, h1, h2, div, button, ul, li, hr)
-import Html.Attributes exposing (class, id)
-import Html.Events exposing (onClick)
+import Html exposing (Html, Attribute, text, h1, h2, div, input, button, ul, li, hr)
+import Html.Attributes exposing (class, id, autofocus, name, value, placeholder, type')
+import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Mailbox, Address, Signal, mailbox, merge, foldp)
-import List exposing (map, reverse, length, sortBy, head)
+import List exposing (take, drop, map, reverse, length, sortBy, indexedMap)
 import Time exposing (every, second)
 import Random exposing (Seed, initialSeed)
 import Shuffle exposing (rShuffle)
@@ -109,7 +109,7 @@ initialCards =
 
 
 type alias Model =
-  { players : List Team
+  { teams : List Team
   , cards : Zip Card
   , state : State
   , maxCount : Int
@@ -120,7 +120,7 @@ type alias Model =
 
 initialModel : Model
 initialModel = let (shuffledCards, seed) = Shuffle.rShuffle 3 (initialCards, startTime |> round |> initialSeed)
-  in { players = dummyTeams
+  in { teams = dummyTeams
      , cards = toCards shuffledCards
      , state = Start
      , maxCount = 10
@@ -130,11 +130,11 @@ initialModel = let (shuffledCards, seed) = Shuffle.rShuffle 3 (initialCards, sta
      }
 
 dummyTeams : List Team
-dummyTeams = [ newTeam "Team Anna", newTeam "Team Bob" ]
+dummyTeams = [ newTeam "Team Anna", newTeam "Team Bob", newTeam "Foo" ]
 
 activeTeamName : Model -> String
 activeTeamName model =
-  case model.players of
+  case model.teams of
     []     -> ""
     x :: _ -> x.name
 
@@ -163,10 +163,10 @@ inPlayButtons address =
     ]
 
 statsView : List Team -> Html
-statsView players =
-  case players of
-    p :: _ -> div [ class "player" ] [ h2 [ class "name" ] [ text (p.name ++ " - " ++ toString p.score) ] ]
-    []     -> div [ class "error" ] [ text "Get some players" ]
+statsView teams =
+  case teams of
+    p :: _ -> div [ class "teams" ] [ h2 [ class "name" ] [ text (p.name ++ " - " ++ toString p.score) ] ]
+    []     -> div [ class "error" ] [ text "Get some teams" ]
 
 playViewTop : Model -> Html
 playViewTop model =
@@ -179,7 +179,7 @@ playViewTop model =
             class "counter"
         ]
         [ text (toString model.count) ]
-    , statsView model.players
+    , statsView model.teams
     ]
 
 
@@ -214,15 +214,30 @@ scoreListEntry : Team -> Html
 scoreListEntry p =
   li [] [ text (p.name ++ ": " ++ toString p.score) ]
 
+mkTeamInput : Address Action -> (Int, Team) -> Html
+mkTeamInput address (i, t) =
+  li [] [ input [ type' "text",
+                  placeholder t.name,
+                  value t.name,
+                  name ("team" ++ toString i),
+                  autofocus False,
+                  onInput address (UpdateName i)] []
+          ]
+
+onInput : Address Action -> (String -> Action) -> Attribute
+onInput address contentToValue =
+  on "input" targetValue (\str -> Signal.message address (contentToValue str))
+
 startView : Address Action -> Model -> Html
-startView address model =
-  div [] [ button [ class "fullPositive", onClick address Init ] [ text <| infoTextForRound model ] ]
+startView address model = let indexedPlayers = indexedMap (,) model.teams
+  in div [] [ ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
+            , button [class "fullPositive", onClick address Init] [ text <| infoTextForRound model]]
 
 endView : Address Action -> Model -> Html
 endView address model =
   div
     [ id "end" ]
-    [ ul [] (map scoreListEntry <| reverse <| sortBy .score model.players)
+    [ ul [] (map scoreListEntry <| reverse <| sortBy .score model.teams)
     , button [ class "next", onClick address NextRound ] [ text <| infoTextForRound model ]
     , button [ class "restart", onClick address Init ] [ text "Restart" ]
     ]
@@ -255,10 +270,10 @@ stateView address model =
 -- UPDATE
 
 incScore : List Team -> List Team
-incScore players =
-  case players of
+incScore teams =
+  case teams of
     p :: ps -> { p | score = p.score + 1 } :: ps
-    []      -> players
+    []      -> teams
 
 type Action
   = NoOp
@@ -268,34 +283,41 @@ type Action
   | Init
   | NextRound
   | Tick
+  | UpdateName Int String
 
 update : Action -> Model -> Model
 update action model =
   case action of
     NoOp    -> model
-    Init    -> { initialModel | state = Play }
+    Init    -> { model | state = Play }
     Later   -> { model | cards = nextElem model.cards }
     Unpause -> { model | state = Play }
     Tick    -> case model.state of
                  Play -> case model.count of
-                           0 -> { model | players = cycle model.players
+                           0 -> { model | teams = cycle model.teams
                                         , cards = nextElem model.cards
                                         , state = Switch
                                         , count = model.maxCount }
                            n -> { model | count = n - 1 }
                  _    -> model
     Solved  -> case model.cards of
-        ( 1, _, _, _ ) -> { model | players = incScore model.players
+        ( 1, _, _, _ ) -> { model | teams = incScore model.teams
                                   , cards = removeElem model.cards
                                   , round = model.round + 1
                                   , state = End}
         _              -> { model | cards = removeElem model.cards
-                                  , players = incScore model.players }
+                                  , teams = incScore model.teams }
     NextRound -> let (shuffledCards, seed) = reshuffle model
                   in {model | state = Play
                             , cards = shuffledCards
                             , nextSeed = seed}
+    UpdateName n name -> {model | teams = (updateName n name model.teams)}
 
+updateName : Int -> String -> List Team -> List Team
+updateName n name l = let (pre, el, post) = ((take n l), take 1 (drop n l), drop (n + 1) l)
+                             in case el of
+                              []      -> l
+                              e :: _ -> pre ++ [{e | name = name}] ++ post
 -- PATCHING
 
 port startTime : Float
