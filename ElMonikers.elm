@@ -222,7 +222,7 @@ scoreListEntry p =
 
 startView : Address Action -> Model -> Html
 startView address model =
-  div [] [ button [ class "fullPositive", onClick address Init ] [ text <| infoTextForRound model ] ,text ("started at: " ++ toString model.nextSeed) ]
+  div [] [ button [ class "fullPositive", onClick address Init ] [ text <| infoTextForRound model ] ]
 
 endView : Address Action -> Model -> Html
 endView address model =
@@ -299,8 +299,6 @@ update action model =
                                   , players = incScore model.players }
     NextRound -> let (shuffledCards, seed) = reshuffle model
                   in {model | state = Play
-                            , players = cycle model.players
-                            , count = model.maxCount
                             , cards = shuffledCards
                             , nextSeed = seed}
 
