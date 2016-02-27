@@ -212,7 +212,7 @@ playView address model =
 
 scoreListEntry : Team -> Html
 scoreListEntry p =
-  li [] [ text (p.name ++ ": " ++ toString p.score) ]
+  li [class "highscore"] [ text (p.name ++ ": " ++ toString p.score) ]
 
 mkTeamInput : Address Action -> (Int, Team) -> Html
 mkTeamInput address (i, t) =
@@ -224,14 +224,24 @@ mkTeamInput address (i, t) =
                   onInput address (UpdateName i)] []
           ]
 
+timerInput : Address Action -> Model -> Html
+timerInput address model =
+  div [class "timer"]
+    [ button [class "plus", onClick address IncTimer] [ text "+5" ]
+    , text ("Timer: " ++ toString model.maxCount ++ " seconds")
+    , button [class "minus", onClick address DecTimer] [ text "-5" ]
+    ]
+
 onInput : Address Action -> (String -> Action) -> Attribute
 onInput address contentToValue =
   on "input" targetValue (\str -> Signal.message address (contentToValue str))
 
 startView : Address Action -> Model -> Html
 startView address model = let indexedPlayers = indexedMap (,) model.teams
-  in div [] [ ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
-            , button [class "fullPositive", onClick address Init] [ text <| infoTextForRound model]]
+  in div [] [ timerInput address model
+            , ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
+            , button [class "fullPositive", onClick address Init] [ text <| infoTextForRound model]
+            ]
 
 endView : Address Action -> Model -> Html
 endView address model =
@@ -284,12 +294,14 @@ type Action
   | NextRound
   | Tick
   | UpdateName Int String
+  | IncTimer
+  | DecTimer
 
 update : Action -> Model -> Model
 update action model =
   case action of
     NoOp    -> model
-    Init    -> { model | state = Play }
+    Init    -> { model | state = Play, count = model.maxCount }
     Later   -> { model | cards = nextElem model.cards }
     Unpause -> { model | state = Play }
     Tick    -> case model.state of
@@ -312,12 +324,15 @@ update action model =
                             , cards = shuffledCards
                             , nextSeed = seed}
     UpdateName n name -> {model | teams = (updateName n name model.teams)}
+    IncTimer -> {model | maxCount = model.maxCount + 5}
+    DecTimer -> {model | maxCount = if model.maxCount > 5 then model.maxCount - 5 else model.maxCount}
 
 updateName : Int -> String -> List Team -> List Team
 updateName n name l = let (pre, el, post) = ((take n l), take 1 (drop n l), drop (n + 1) l)
                              in case el of
                               []      -> l
                               e :: _ -> pre ++ [{e | name = name}] ++ post
+
 -- PATCHING
 
 port startTime : Float

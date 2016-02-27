@@ -132,6 +132,52 @@ button.restart {
   background: #ff6666;
 }
 
+div.timer {
+  border: 0;
+  height: 55px;
+  text-align: center;
+  padding: 5px 0;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #4f4f4f;
+  background: #eaeaea;
+}
+
+button.plus {
+  border: 0;
+  float: left;
+  width: 75px;
+  height: 55px;
+  vertical-align: top;
+  padding: 5px 15px;
+  font-size: 42px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #33cc33;
+}
+
+button.minus {
+  border: 0;
+  float: right;
+  width: 75px;
+  height: 55px;
+  vertical-align: top;
+  padding: 5px 15px;
+  font-size: 42px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #fff;
+  background: #ff6666;
+}
+
 button:hover {
   opacity: 0.75;
 }
@@ -140,6 +186,23 @@ button {
   outline: none;
   font-size: 100%;
 }
+
+ul.teams li input {
+  margin: 10px;
+  border: 2px;
+  height: 55px;
+  vertical-align: top;
+  text-align: center;
+  width: 100%;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  color: #4f4f4f;
+  background: #d9d9d9;
+}
+
 
 h2.name {
   color: #61a1bc;
@@ -173,7 +236,7 @@ ul {
   text-align: left;
 }
 
-li {
+li.highscore {
   background: #61a1bc;
   background: #fff;
   height: 25px;
@@ -181,17 +244,6 @@ li {
   padding: 15px 30px;
   margin-bottom: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-li:hover {
-  background: #fcfcfc;
-  /* background: #61a1bc; */
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-  cursor: pointer;
-}
-
-li.highlight {
-  background: #61a1bc;
 }
 
 hr {
