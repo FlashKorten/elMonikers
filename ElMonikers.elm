@@ -120,7 +120,7 @@ type alias Model =
 
 initialModel : Model
 initialModel = let (shuffledCards, seed) = Shuffle.rShuffle 3 (initialCards, startTime |> round |> initialSeed)
-  in { teams = dummyTeams
+  in { teams = initialTeams
      , cards = toCards shuffledCards
      , state = Start
      , maxCount = 10
@@ -129,8 +129,8 @@ initialModel = let (shuffledCards, seed) = Shuffle.rShuffle 3 (initialCards, sta
      , round = 1
      }
 
-dummyTeams : List Team
-dummyTeams = [ newTeam "Team Anna", newTeam "Team Bob", newTeam "Foo" ]
+initialTeams : List Team
+initialTeams = [ newTeam "Team Anna", newTeam "Team Bob" ]
 
 activeTeamName : Model -> String
 activeTeamName model =
