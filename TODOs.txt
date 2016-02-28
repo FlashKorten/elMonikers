@@ -6,6 +6,8 @@ Specific 'About' Page
 
 Error messages to user
 
+Touch/Swipe version for mobile
+
 Find someone to visually design this thing
 
 Fix Bugs ;)
