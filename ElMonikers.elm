@@ -35,8 +35,8 @@ nextElem ( n, past, future, done ) =
                          [] -> ( n, [], reverse (current :: past), done )
                          x  -> ( n, current :: past, x, done )
 
-reshuffle : Model -> (Zip Card, Seed)
-reshuffle model = case model.cards of
+reshuffleDiscards : Model -> (Zip Card, Seed)
+reshuffleDiscards model = case model.cards of
     (_, _, _, discards) -> let (l, s) = Shuffle.rShuffle 3 (discards, model.nextSeed)
                         in ((length l, [], l, []), s)
 
@@ -71,12 +71,12 @@ newCard ( g, c, t, d ) =
   , description = d
   }
 
-toCards : List ( String, String, String, String ) -> Zip Card
-toCards l =
-  ( length l, [], map newCard l, [] )
+toDiscards : List ( String, String, String, String ) -> Zip Card
+toDiscards l =
+  ( 0 , [], [], map newCard l )
 
-initialCards : List (String, String, String, String)
-initialCards =
+initialData : List (String, String, String, String)
+initialData =
     [
       ( "Historical", "Scientist", "Heisenberg", "A German theoretical physicist, creator of the uncertainty principle, and winner of a Nobel Prize in Physics for his development of quantum mechanics. His name was also used as an alias for the meth manufacturer Walter White in the series Breaking Bad." )
     , ( "Fictional", "Simpsons", "Comic Book Guy", "The overweight owner of The Android's Dungeon & Baseball Card Shop on The Simpsons. His character has a master's degree in foldlore mythology - he translated The Lord of the Rings into Klingon - and is known for his catchphrase ''Worst [blank] ever.''" )
@@ -119,15 +119,14 @@ type alias Model =
   }
 
 initialModel : Model
-initialModel = let (shuffledCards, seed) = Shuffle.rShuffle 3 (initialCards, startTime |> round |> initialSeed)
-  in { teams = initialTeams
-     , cards = toCards shuffledCards
-     , state = Start
-     , maxCount = 10
-     , count = 10
-     , nextSeed = seed
-     , round = 1
-     }
+initialModel = { teams = initialTeams
+               , cards = toDiscards initialData
+               , state = Start
+               , maxCount = 10
+               , count = 10
+               , nextSeed = startTime |> round |> initialSeed
+               , round = 1
+               }
 
 initialTeams : List Team
 initialTeams = [ newTeam "Team Anna", newTeam "Team Bob" ]
@@ -240,7 +239,7 @@ startView : Address Action -> Model -> Html
 startView address model = let indexedPlayers = indexedMap (,) model.teams
   in div [] [ timerInput address model
             , ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
-            , button [class "fullPositive", onClick address Init] [ text <| infoTextForRound model]
+            , button [class "fullPositive", onClick address NextRound] [ text <| infoTextForRound model]
             ]
 
 endView : Address Action -> Model -> Html
@@ -301,7 +300,7 @@ update : Action -> Model -> Model
 update action model =
   case action of
     NoOp    -> model
-    Init    -> { model | state = Play, count = model.maxCount }
+    Init    -> initialModel
     Later   -> { model | cards = nextElem model.cards }
     Unpause -> { model | state = Play }
     Tick    -> case model.state of
@@ -319,7 +318,7 @@ update action model =
                                   , state = End}
         _              -> { model | cards = removeElem model.cards
                                   , teams = incScore model.teams }
-    NextRound -> let (shuffledCards, seed) = reshuffle model
+    NextRound -> let (shuffledCards, seed) = reshuffleDiscards model
                   in {model | state = Play
                             , cards = shuffledCards
                             , nextSeed = seed}
