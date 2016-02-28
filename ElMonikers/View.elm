@@ -139,11 +139,11 @@ endView address model =
 
 infoTextForRound : Model -> String
 infoTextForRound model = case model.round of
-    1 -> "1st Round: Do whatever you like."
-    2 -> "2nd Round: Only a single word allowed."
-    3 -> "3rd Round: Only gestures allowed."
-    4 -> "4th Round: Facial expressions only."
-    _ -> "Next Round: Use your own rules."
+    1 -> lookup model.dict "Round1"
+    2 -> lookup model.dict "Round2"
+    3 -> lookup model.dict "Round3"
+    4 -> lookup model.dict "Round4"
+    _ -> lookup model.dict "Round4+"
 
 switchView : Address Action -> Model -> Html
 switchView address model =
