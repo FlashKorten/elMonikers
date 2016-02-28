@@ -1,4 +1,19 @@
-module ElMonikers.Model (..) where
+module ElMonikers.Model ( Action(..)
+                        , Card
+                        , Model
+                        , State(..)
+                        , Zip
+                        , activeTeamName
+                        , cycle
+                        , incScore
+                        , initialModel
+                        , newTeam
+                        , nextElem
+                        , removeElem
+                        , resetTeamScores
+                        , reshuffleDiscards
+                        , updateName
+                        ) where
 
 import List exposing (take, drop, map, reverse, length, sortBy, indexedMap)
 import Random exposing (Seed, initialSeed)

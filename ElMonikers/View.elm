@@ -1,11 +1,11 @@
-module ElMonikers.View (..) where
+module ElMonikers.View (view) where
 
 import Html exposing (Html, Attribute, text, h1, h2, div, input, button, ul, li, hr)
 import Html.Attributes exposing (class, id, autofocus, name, value, placeholder, type')
 import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Address, Signal)
 import List exposing (map, reverse, sortBy, indexedMap)
-import ElMonikers.Model exposing (..)
+import ElMonikers.Model exposing (Action(..), State(..), Zip, Card, Model, Team, activeTeamName)
 
 view : Address Action -> Model -> Html
 view address model =
@@ -109,9 +109,12 @@ onInput address contentToValue =
 startView : Address Action -> Model -> Html
 startView address model = let indexedPlayers = indexedMap (,) model.teams
   in div [] [ timerInput address model
-            , ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
-            , button [class "addTeam",      onClick address AddTeam] [ text "Add Team" ]
-            , button [class "fullPositive", onClick address NextRound] [ text <| infoTextForRound model]
+            , ul     [class "teams"]
+                     (map (mkTeamInput address) indexedPlayers)
+            , button [class "addTeam", onClick address AddTeam]
+                     [ text "Add Team" ]
+            , button [class "fullPositive", onClick address NextRound]
+                     [ text <| infoTextForRound model]
             ]
 
 endView : Address Action -> Model -> Html
