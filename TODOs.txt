@@ -1,7 +1,8 @@
-Get Cards via JSON-Call
-Select 'Genre/Classifications'
+Get Cards via JSON-Call to elMonikersBE
+Filter 'Genre/Classifications'
 
 Specific 'Configuration' Page
+Specific 'About' Page
 
 Error messages to user
 
