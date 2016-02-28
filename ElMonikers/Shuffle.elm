@@ -1,18 +1,18 @@
 module ElMonikers.Shuffle (rShuffle) where
 
-import List exposing (..)
-import Random exposing (Seed, bool, initialSeed, generate)
+import List exposing (foldl, repeat, length)
+import Random exposing (Seed, bool, generate)
 
 
 rShuffle : Int -> (List a, Seed) -> (List a, Seed)
-rShuffle n l = let fs = List.repeat n shuffle
+rShuffle n l = let fs = repeat n shuffle
                 in l |> foldl (<<) identity fs
 
 shuffle : (List a, Seed) -> (List a, Seed)
 shuffle (l, s) =
-  if List.length l < 2 then (l, s)
-                         else let ( l1, l2 ) = split l
-                               in merge ( shuffle (l1, s), shuffle (l2, s) )
+  if length l < 2 then (l, s)
+                  else let ( l1, l2 ) = split l
+                        in merge ( shuffle (l1, s), shuffle (l2, s) )
 
 merge : ( (List a, Seed), (List a, Seed) ) -> (List a, Seed)
 merge input =
