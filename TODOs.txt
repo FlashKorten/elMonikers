@@ -3,6 +3,8 @@ Select 'Genre/Classifications'
 
 Specific 'Configuration' Page
 
+Error messages to user
+
 Localization
 
 Fix Bugs ;)

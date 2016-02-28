@@ -8,9 +8,9 @@ import ElMonikers.Model exposing ( Action(..)
                                  , incScore
                                  , initialModel
                                  , newTeam
-                                 , nextElem
-                                 , removeElem
-                                 , resetTeamScores
+                                 , nextInZip
+                                 , removeFromZip
+                                 , resetScores
                                  , reshuffleDiscards
                                  , updateName
                                  )
@@ -36,21 +36,21 @@ update action model =
 
 updateInit : Model -> Model
 updateInit m = let model = initialModel m.nextSeed
-               in { model | teams = resetTeamScores m.teams
+               in { model | teams = resetScores m.teams
                   , maxCount = m.maxCount
                   , count = m.count}
 
 updateSolved : Model -> Model
 updateSolved m = case m.cards of
         ( 1, _, _, _ ) -> { m | teams = incScore m.teams
-                              , cards = removeElem m.cards
+                              , cards = removeFromZip m.cards
                               , round = m.round + 1
                               , state = End}
         _              -> { m | teams = incScore m.teams
-                              , cards = removeElem m.cards }
+                              , cards = removeFromZip m.cards }
 
 updateNotSolved : Model -> Model
-updateNotSolved m = { m | cards = nextElem m.cards }
+updateNotSolved m = { m | cards = nextInZip m.cards }
 
 updateNextTeam : Model -> Model
 updateNextTeam m = { m | state = Play }
@@ -61,16 +61,6 @@ updateNextRound m = let (shuffledCards, seed) = reshuffleDiscards m
                             , cards = shuffledCards
                             , count = if m.round == 1 then m.maxCount else m.count
                             , nextSeed = seed}
-
-updateTick : Model -> Model
-updateTick m = case m.state of
-                 Play -> case m.count of
-                           0 -> { m | teams = cycle m.teams
-                                    , cards = nextElem m.cards
-                                    , state = Switch
-                                    , count = m.maxCount }
-                           n -> { m | count = n - 1 }
-                 _    -> m
 
 updateIncTimer : Model -> Model
 updateIncTimer m = { m| maxCount = m.maxCount + 5}
@@ -86,3 +76,13 @@ updateRemoveTeam m n = { m | teams = (take n m.teams) ++ (drop (n + 1) m.teams)}
 
 updateUpdateName : Model -> Int -> String -> Model
 updateUpdateName m n name = { m | teams = (updateName n name m.teams)}
+
+updateTick : Model -> Model
+updateTick m = case m.state of
+                 Play -> case m.count of
+                           0 -> { m | teams = cycle m.teams
+                                    , cards = nextInZip m.cards
+                                    , state = Switch
+                                    , count = m.maxCount }
+                           n -> { m | count = n - 1 }
+                 _    -> m

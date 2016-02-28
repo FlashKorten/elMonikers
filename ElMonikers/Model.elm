@@ -2,15 +2,16 @@ module ElMonikers.Model ( Action(..)
                         , Card
                         , Model
                         , State(..)
+                        , Team
                         , Zip
                         , activeTeamName
                         , cycle
                         , incScore
                         , initialModel
                         , newTeam
-                        , nextElem
-                        , removeElem
-                        , resetTeamScores
+                        , nextInZip
+                        , removeFromZip
+                        , resetScores
                         , reshuffleDiscards
                         , updateName
                         ) where
@@ -41,16 +42,16 @@ type State
 
 type alias Zip a = ( Int, List a, List a, List a )
 
-removeElem : Zip a -> Zip a
-removeElem ( n, past, future, done ) =
+removeFromZip : Zip a -> Zip a
+removeFromZip ( n, past, future, done ) =
   case future of
     [] -> ( 42, [], [], [])
     next :: rest -> case rest of
         [] -> ( n - 1, [], reverse past, next::done )
         x  -> ( n - 1, past, x, next::done )
 
-nextElem : Zip a -> Zip a
-nextElem ( n, past, future, done ) =
+nextInZip : Zip a -> Zip a
+nextInZip ( n, past, future, done ) =
   case future of
     [] -> ( n, [], reverse past, done )
     current :: rest -> case rest of
@@ -153,8 +154,8 @@ initialModel seed = { teams = initialTeams
 initialTeams : List Team
 initialTeams = [ newTeam "Team Anna", newTeam "Team Bob" ]
 
-resetTeamScores : List Team -> List Team
-resetTeamScores l = map (\t -> {t | score = 0}) l
+resetScores : List Team -> List Team
+resetScores l = map (\t -> {t | score = 0}) l
 
 activeTeamName : Model -> String
 activeTeamName model =
