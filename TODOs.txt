@@ -1,8 +1,8 @@
-Split code into modules
-
 Get Cards via JSON-Call
 Select 'Genre/Classifications'
 
 Specific 'Configuration' Page
+
+Localization
 
 Fix Bugs ;)

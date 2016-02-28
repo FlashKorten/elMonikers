@@ -1,4 +1,4 @@
-module Shuffle (rShuffle) where
+module ElMonikers.Shuffle (rShuffle) where
 
 import List exposing (..)
 import Random exposing (Seed, bool, initialSeed, generate)
