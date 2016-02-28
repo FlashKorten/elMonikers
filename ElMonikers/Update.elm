@@ -1,6 +1,7 @@
 module ElMonikers.Update (update) where
 
 import List exposing (take, drop)
+import ElMonikers.I18n exposing (Iso(..), initDict)
 import ElMonikers.Model exposing ( Action(..)
                                  , Model
                                  , State(..)
@@ -31,14 +32,16 @@ update action model =
     AddTeam           -> updateAddTeam model
     RemoveTeam n      -> updateRemoveTeam model n
     UpdateName n name -> updateUpdateName model n name
+    SetLocale iso     -> updateSetLocale model iso
     -- Timer Event
     Tick              -> updateTick model
 
 updateInit : Model -> Model
 updateInit m = let model = initialModel m.nextSeed
                in { model | teams = resetScores m.teams
-                  , maxCount = m.maxCount
-                  , count = m.count}
+                          , dict = m.dict
+                          , maxCount = m.maxCount
+                          , count = m.count }
 
 updateSolved : Model -> Model
 updateSolved m = case m.cards of
@@ -76,6 +79,9 @@ updateRemoveTeam m n = { m | teams = (take n m.teams) ++ (drop (n + 1) m.teams)}
 
 updateUpdateName : Model -> Int -> String -> Model
 updateUpdateName m n name = { m | teams = (updateName n name m.teams)}
+
+updateSetLocale : Model -> Iso -> Model
+updateSetLocale m iso = { m | dict = initDict iso}
 
 updateTick : Model -> Model
 updateTick m = case m.state of

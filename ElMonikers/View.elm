@@ -6,34 +6,45 @@ import Html.Events exposing (onClick, on, targetValue)
 import Signal exposing (Address, Signal)
 import List exposing (map, reverse, sortBy, indexedMap)
 import ElMonikers.Model exposing (Action(..), State(..), Zip, Card, Model, Team, activeTeamName)
+import ElMonikers.I18n exposing (Iso(..), lookup, queryCodes)
+import Dict exposing (Dict)
 
 view : Address Action -> Model -> Html
 view address model =
   div
     [ id "container" ]
-    [ pageHeader
+    [ pageHeader address model.dict
     , stateView address model
     ]
 
-pageHeader : Html
-pageHeader =
-  h1 [] [ text "elMonikers!" ]
+localeChooser : Address Action -> List Html
+localeChooser address = let b iso = button [class ("locale" ++ toString iso), onClick address (SetLocale iso)] [ text (toString iso)]
+                        in map b queryCodes
 
-inPlayButtons : Address Action -> Html
-inPlayButtons address =
+pageHeader : Address Action -> Dict String String -> Html
+pageHeader address d = div [ class "head" ]
+                           [ div [ class "locale" ] (localeChooser address)
+                           , h1 [] [ text <| lookup d "Title" ]
+                           ]
+
+inPlayButtons : Address Action -> Dict String String -> Html
+inPlayButtons address d =
   div
     []
     [ div []
-        [ button [ class "solved", onClick address Solved ] [ text "Solved" ]
-        , button [ class "later", onClick address NotSolved ] [ text "Later..." ]
+        [ button [ class "solved", onClick address Solved ] [ text <| lookup d "Solved" ]
+        , button [ class "later", onClick address NotSolved ] [ text <| lookup d "Unsolved" ]
         ]
     ]
 
 statsView : List Team -> Html
 statsView teams =
   case teams of
-    p :: _ -> div [ class "teams" ] [ h2 [ class "name" ] [ text (p.name ++ " - " ++ toString p.score) ] ]
-    []     -> div [ class "error" ] [ text "Get some teams" ]
+    p :: _ -> div [ class "teams" ]
+                  [ h2 [ class "name" ]
+                       [ text (p.name ++ " - " ++ toString p.score) ]]
+    []     -> div [ class "unreachableBranch" ]
+                  [ text "if you see me, there is a major logic error happening..."]
 
 playViewTop : Model -> Html
 playViewTop model =
@@ -50,14 +61,14 @@ playViewTop model =
     ]
 
 
-playViewBottom : Address Action -> Html
-playViewBottom address =
-  div [] [ inPlayButtons address ]
+playViewBottom : Address Action -> Dict String String -> Html
+playViewBottom address d =
+  div [] [ inPlayButtons address d]
 
 playViewCard : Address Action -> Zip Card -> Html
 playViewCard address ( _, _, c, _ ) =
   case c of
-    []     -> div [] [ text "Empty!!!" ]
+    []     -> div [class "unreachableBranch"] [ text "if you see me, there is a major logic error happening..."]
     x :: _ -> div
                 []
                 [ hr [] []
@@ -74,7 +85,7 @@ playView address model =
     []
     [ playViewTop model
     , playViewCard address model.cards
-    , playViewBottom address
+    , playViewBottom address model.dict
     ]
 
 scoreListEntry : Team -> Html
@@ -98,7 +109,7 @@ timerInput : Address Action -> Model -> Html
 timerInput address model =
   div [class "timer"]
     [ button [class "plus", onClick address IncTimer] [ text "+5" ]
-    , text ("Timer: " ++ toString model.maxCount ++ " seconds")
+    , text ((lookup model.dict "Timer") ++ toString model.maxCount)
     , button [class "minus", onClick address DecTimer] [ text "-5" ]
     ]
 
@@ -112,7 +123,7 @@ startView address model = let indexedPlayers = indexedMap (,) model.teams
             , ul     [class "teams"]
                      (map (mkTeamInput address) indexedPlayers)
             , button [class "addTeam", onClick address AddTeam]
-                     [ text "Add Team" ]
+                     [ text <| lookup model.dict "AddTeam" ]
             , button [class "fullPositive", onClick address NextRound]
                      [ text <| infoTextForRound model]
             ]
@@ -123,7 +134,7 @@ endView address model =
     [ id "end" ]
     [ ul [] (map scoreListEntry <| reverse <| sortBy .score model.teams)
     , button [ class "next", onClick address NextRound ] [ text <| infoTextForRound model ]
-    , button [ class "restart", onClick address Init ] [ text "Restart" ]
+    , button [ class "restart", onClick address Init ] [ text <| lookup model.dict "Restart" ]
     ]
 
 infoTextForRound : Model -> String
@@ -140,7 +151,7 @@ switchView address model =
     [ id "switch" ]
     [ button
         [ class "fullPositive", onClick address NextTeam ]
-        [ text ("Next up: " ++ (activeTeamName model)) ]
+        [ text ((lookup model.dict "NextTeam") ++ (activeTeamName model)) ]
     ]
 
 stateView : Address Action -> Model -> Html

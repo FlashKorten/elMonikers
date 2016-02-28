@@ -17,8 +17,10 @@ module ElMonikers.Model ( Action(..)
                         ) where
 
 import List exposing (take, drop, map, reverse, length, sortBy, indexedMap)
+import Dict exposing (Dict)
 import Random exposing (Seed, initialSeed)
 import ElMonikers.Shuffle exposing (rShuffle)
+import ElMonikers.I18n as I18n exposing (Iso(..), initDict)
 
 type Action
   = NoOp
@@ -33,6 +35,7 @@ type Action
   | DecTimer
   | AddTeam
   | RemoveTeam Int
+  | SetLocale Iso
 
 type State
   = Start
@@ -139,6 +142,7 @@ type alias Model =
   , count : Int
   , nextSeed : Seed
   , round : Int
+  , dict : Dict String String
   }
 
 initialModel : Seed -> Model
@@ -149,6 +153,7 @@ initialModel seed = { teams = initialTeams
                     , count = 10
                     , nextSeed = seed
                     , round = 1
+                    , dict = I18n.initDict I18n.En
                     }
 
 initialTeams : List Team

@@ -5,6 +5,6 @@ Specific 'Configuration' Page
 
 Error messages to user
 
-Localization
+Find someone to visually design this thing
 
 Fix Bugs ;)
