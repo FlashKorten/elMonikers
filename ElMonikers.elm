@@ -215,13 +215,16 @@ scoreListEntry p =
 
 mkTeamInput : Address Action -> (Int, Team) -> Html
 mkTeamInput address (i, t) =
-  li [] [ input [ type' "text",
-                  placeholder t.name,
-                  value t.name,
-                  name ("team" ++ toString i),
-                  autofocus False,
-                  onInput address (UpdateName i)] []
-          ]
+  li [] [ input [ type' "text"
+                , class "teamName"
+                , placeholder t.name
+                , value t.name
+                , name ("team" ++ toString i)
+                , autofocus False
+                , onInput address (UpdateName i)
+                ] []
+        , button [class "removeTeam", onClick address (RemoveTeam i)] [ text "X" ]
+        ]
 
 timerInput : Address Action -> Model -> Html
 timerInput address model =
@@ -239,6 +242,7 @@ startView : Address Action -> Model -> Html
 startView address model = let indexedPlayers = indexedMap (,) model.teams
   in div [] [ timerInput address model
             , ul     [class "teams"]                              (map (mkTeamInput address) indexedPlayers)
+            , button [class "addTeam",      onClick address AddTeam] [ text "Add Team" ]
             , button [class "fullPositive", onClick address NextRound] [ text <| infoTextForRound model]
             ]
 
@@ -295,12 +299,14 @@ type Action
   | UpdateName Int String
   | IncTimer
   | DecTimer
+  | AddTeam
+  | RemoveTeam Int
 
 update : Action -> Model -> Model
 update action model =
   case action of
     NoOp    -> model
-    Init    -> initialModel
+    Init    -> { initialModel | teams = model.teams }
     Later   -> { model | cards = nextElem model.cards }
     Unpause -> { model | state = Play }
     Tick    -> case model.state of
@@ -325,6 +331,8 @@ update action model =
     UpdateName n name -> {model | teams = (updateName n name model.teams)}
     IncTimer -> {model | maxCount = model.maxCount + 5}
     DecTimer -> {model | maxCount = if model.maxCount > 5 then model.maxCount - 5 else model.maxCount}
+    AddTeam -> {model | teams = model.teams ++ [ newTeam "New Team" ]}
+    RemoveTeam n -> {model | teams = (take n model.teams) ++ (drop (n + 1) model.teams)}
 
 updateName : Int -> String -> List Team -> List Team
 updateName n name l = let (pre, el, post) = ((take n l), take 1 (drop n l), drop (n + 1) l)
